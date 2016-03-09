@@ -1,0 +1,14 @@
+[
+	{"properties":
+		{"id":"1",
+		"name":"Amenabar 639"}
+	,
+	 "geometry": {"type":"Point","coordinates":[5440325.191041684,6351981.411588279]}
+	},
+	{"properties":
+		{"id":"2",
+		"name":"Amenabar 1900"}
+	,
+	 "geometry": {"type":"Point","coordinates":[5438690.616757703,6352348.163557427]}
+	}
+]
