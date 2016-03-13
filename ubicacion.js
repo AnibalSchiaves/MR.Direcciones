@@ -2,7 +2,7 @@
 	
 	this.suffix = "ubicacionMR"
 	
-	this.url_servicio_dir = "http://localhost/MR.Direcciones/exampledir.json";
+	this.url_servicio_dir = "exampledir.json"; //"http://localhost/MR.Direcciones/exampledir.json";
 	this.url_servicio_lugares = "http://localhost/mapa/proxy.php?url=http://t-www.rosario.gov.ar/web/geojson-lugares";
 	
 	this.style_map_default = {'width': '50%', 'heigth': '400px', 'border': '1px solid'};
