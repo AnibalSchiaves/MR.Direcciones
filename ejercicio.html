@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html>
+	<head>
+		<title>Prueba de control MR.Direcciones</title>
+		<meta charset="UTF-8">
+		<script type="text/javascript" src="dependencias/jquery-2.2.1.js"></script>
+		<!--<script type="text/javascript" src="http://localhost/mapa/js/jquery-ui-1.8.23.custom.min.js"></script>-->
+		<script type="text/javascript" src="dependencias/ol.js"></script>
+		<script type="text/javascript" src="dependencias/proj4.js"></script>
+		<!--<script type="text/javascript" src="http://infomapa.rosario.gov.ar/emapa/resources/javascript/proj4js-compressed.js"></script>-->
+		
+		<script type="text/javascript" src="ubicacion.js"></script>
+		
+		<link rel="stylesheet" href="dependencias/ol.css" type="text/css"/>
+	</head>
+	<body>
+		<form>
+			<div id="mapa"></div>
+		</form>
+	</body>
+	<style>
+		#mapa
+		{
+			width:90%;
+			height: 500px;
+			border: 1px solid;
+		}
+	</style>
+	<script type="text/javascript">
+		//$(document).ready(function() {
+			var map = new ol.Map({
+				target: 'mapa',
+				loadTilesWhileAnimating: true,
+			});
+			map.addLayer(new ol.layer.Tile({
+				source: new ol.source.OSM()
+			}));
+			map.setView(new ol.View({
+				center: [0,0],
+				zoom: 2
+			}));
+		//});
+		function efecto() {
+			var duration = 2000;
+			var start = +new Date();
+			var pan = ol.animation.pan({
+			  duration: duration,
+			  source: /** @type {ol.Coordinate} */ (map.getView().getCenter()),
+			  start: start
+			});
+			var bounce = ol.animation.bounce({
+			  duration: duration,
+			  resolution: 4 * map.getView().getResolution(),
+			  start: start
+			});
+			map.beforeRender(pan, bounce);
+			map.getView().setCenter([-6750459.715977056, -3889574.621319479]);
+			map.getView().setZoom(14);
+		  }
+		  
+		function efecto2() {
+			var duration = 2000;
+			var start = +new Date();
+			var pan = ol.animation.pan({
+			  duration: duration,
+			  source: /** @type {ol.Coordinate} */ (map.getView().getCenter()),
+			  start: start
+			});
+			var bounce = ol.animation.bounce({
+			  duration: duration,
+			  resolution: 4 * map.getView().getResolution(),
+			  start: start
+			});
+			map.beforeRender(pan, bounce);
+			map.getView().setCenter([-6746246.124792835, -3937395.537140392]);
+			map.getView().setZoom(14);
+		}
+	</script>
+</html>
