@@ -1,0 +1,28 @@
+.ubicacionMR-ul
+{
+	border: 1px #DDDDDD solid;
+	display: inline;
+	list-style: none;
+	padding: 0;
+	border-radius: 5px;
+	position: absolute;
+	z-index: 100;
+	background-color: white;
+	margin: 1px;
+}
+.ubicacionMR-li
+{
+	margin: 1px 5px 1px 5px;
+	font-family: sans-serif;
+	font-size: 12px;
+	color: #555555;
+	cursor: pointer;
+}
+.ubicacionMR-control-typedraw {
+    top: 65px;
+    left: .5em;
+}
+.ubicacionMR-control-typedraw label{
+	font-size: 9px;
+	color: #555555;
+}

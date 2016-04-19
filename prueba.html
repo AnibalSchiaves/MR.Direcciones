@@ -10,14 +10,18 @@
 		<!--<script type="text/javascript" src="http://infomapa.rosario.gov.ar/emapa/resources/javascript/proj4js-compressed.js"></script>-->
 		
 		<script type="text/javascript" src="ubicacion.js"></script>
+		<link rel="stylesheet" href="ubicacion.css" type="text/css"/>
 		
 		<link rel="stylesheet" href="dependencias/ol.css" type="text/css"/>
 	</head>
 	<body>
 		<form>
 			<input type="text" id="txtDirecciones" placeHolder="Ejemplo de direcciones" size="50" />
+			<div id="mapadir"></div>
 			<input type="text" id="txtLugares" placeHolder="Ejemplo de lugares con Mapa" size="50" />
 			<div id="mapa"></div>
+			<textarea id="txtDibujo" placeHolder="Ejemplo para dibujar puntos en Mapa" cols="60" rows="5"></textarea>
+			<div id="mapadraw"></div>
 		</form>
 	</body>
 	<script type="text/javascript">
@@ -27,7 +31,11 @@
 				filtro:{
 					clase:'direccion'
 				},
-				minLength: 4
+				minLength: 4,
+				format:'geojson', //Puedo indicarle el formato en que se reciben los datos desde el web services de direcciones
+				mapa: {
+					id:'mapadir',
+				}
 			});
 			//Se define un control para buscar hospitales
 			$("#txtLugares").ubicacionMR({
@@ -41,6 +49,14 @@
 				mapa: {
 					id: 'mapa',
 					//style: {width: '100%', height:'500px', border: '1px solid'}
+				}
+			});
+			//Se define un control para dibujar un punto
+			$("#txtDibujo").ubicacionMR({
+				sinBusqueda: true,
+				mapa: {
+					id:'mapadraw',
+					dibujar:'todos'
 				}
 			});
 		});
