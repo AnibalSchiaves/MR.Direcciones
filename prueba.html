@@ -17,17 +17,24 @@
 	<body>
 		<form>
 			<input type="text" id="txtDirecciones" placeHolder="Ejemplo de direcciones" size="50" />
+			<input type="button" onclick="informarDatos();" value="Mostrar Valores"/>
 			<div id="mapadir"></div>
 			<input type="text" id="txtLugares" placeHolder="Ejemplo de lugares con Mapa" size="50" />
 			<div id="mapa"></div>
 			<textarea id="txtDibujo" placeHolder="Ejemplo para dibujar puntos en Mapa" cols="60" rows="5"></textarea>
 			<div id="mapadraw"></div>
+			<input type="text" id="txtAlInicio" placeHolder="Ejemplo de Mapa inicializado al cargarse" size="50" />
+			<div id="mapaInicio"></div>
+			<!--<input type="text" id="txtDesdeFeatures" placeHolder="Ejemplo de Mapa inicializado desde features" size="50" />-->
+			<label id="txtDesdeFeatures">Ejemplo de Mapa inicializado desde features</label>
+			<div id="mapaDesdeFeatures"></div>
 		</form>
 	</body>
 	<script type="text/javascript">
+		var control = null;
 		$(document).ready(function() {
 			//Se define un control para buscar direcciones
-			$("#txtDirecciones").ubicacionMR({
+			control = $("#txtDirecciones").ubicacionMR({
 				filtro:{
 					clase:'direccion'
 				},
@@ -59,6 +66,33 @@
 					dibujar:'todos'
 				}
 			});
+			//Se define un control para cargar el mapa al inicio
+			$("#txtAlInicio").ubicacionMR({
+				filtro:{
+					clase:'lugar', //Para filtrar lugares
+					filtroclase: {
+						tipo: '10',    //Para filtrar tipos de lugares de salud
+						subtipo: '22'  //Para filtrar x subtipo hospitales
+					}
+				},
+				mapa: {
+					id: 'mapaInicio',
+					cargarAlInicio: true,
+				}
+			});
+			//
+			$("#txtDesdeFeatures").ubicacionMR({
+				mapa: {
+					id: 'mapaDesdeFeatures',
+					cargarAlInicio: true,
+					features: {"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5432005.599242068,6356126.779275634]},"properties":null},{"type":"Feature","geometry":{"type":"LineString","coordinates":[[5432540.059468503,6357310.226919884],[5435670.469366197,6356088.603545175]]},"properties":null},{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[5434181.615878269,6357691.984224481],[5436739.389819068,6356966.6453457475],[5436128.578131713,6358302.7959118355],[5434181.615878269,6357691.984224481]]]},"properties":null}]}
+				}
+			});
 		});
+		
+		function informarDatos() {
+			alert(control.getLabel());
+			alert(control.getValue())
+		}
 	</script>
 </html>

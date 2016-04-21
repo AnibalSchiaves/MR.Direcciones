@@ -37,6 +37,7 @@
         (keycode > 64 && keycode < 91)   || // letter keys
         (keycode > 95 && keycode < 112)  || // numpad keys
         (keycode > 185 && keycode < 193) || // ;=,-./` (in order)
+		(keycode == 8) ||                   // backspace
         (keycode > 218 && keycode < 223);   // [\]' (in order)
 		
 		return valid;
@@ -121,7 +122,8 @@
 	//Temporales
 	this.imagePin = new ol.style.Icon({
 		src: 'img/boton-pin.png',
-		scale: 0.6
+		scale: 0.6,
+		offset: [0,20]
 	});
 	
 	//Funciones para controles agregados
@@ -165,6 +167,13 @@
 				
         };
 		
+		var clearFeatures = function() {
+			var vectorDraw = null;
+			map.getLayers().forEach(function (lyr) {if (lyr.get('id')=='layerDraw') {vectorDraw = lyr;}});
+			vectorDraw.getSource().clear();
+			control.val('');
+		}
+		
         var labelPoint = ubicacionMR.createLabel("Punto");
 		var radioPoint = ubicacionMR.createRadio("radioTypeDraw","Point");
 		radioPoint.setAttribute('checked','checked');
@@ -190,6 +199,14 @@
 		div3.appendChild(radioPoli);
 		div3.appendChild(labelPoli);
 		element.appendChild(div3);
+		var div4 = document.createElement('div');
+		var buttonClear = document.createElement('button');
+		buttonClear.addEventListener('click', function() {clearFeatures();return false;}, false);
+		buttonClear.innerHTML='x';
+		buttonClear.title = "Borrar todo";
+		buttonClear.type = 'button';
+		div4.appendChild(buttonClear);
+		element.appendChild(div4);
 
         ol.control.Control.call(this, {
           element: element,
@@ -268,7 +285,13 @@
 		this.dibujarEnMapa = function (object,map) {
 			var features = [];
 			if (object.type=='FeatureCollection') {
-				
+				features = (new ol.format.GeoJSON()).readFeatures(object);
+				for (var i=0;i<object.features.length;i++) {
+					var id = null;
+					if (object.features[i].properties && object.features[i].properties.id) id = object.features[i].properties.id;
+					if (id==null) id = JSON.stringify(object.features[i].geometry.coordinates);
+					features[i].setId(id);
+				}	
 			} else if (object.type=='Feature') {
 				//Obtengo el feature si existe
 				var id = null;
@@ -343,7 +366,8 @@
 				if (vectorLayer == null) {
 					vectorLayer = new ol.layer.Vector({
 						source: vectorSource,
-						style: styleFunction,
+						//style: styleFunction,
+						style: ubicacionMR.styleDraw,
 						id: 'layerFeatures',
 					});
 					map.addLayer(vectorLayer);
@@ -371,32 +395,46 @@
 		}
 		
 	}
+}
+
+function UbicacionMR () {
+	this.controlVisible = null;
+	this.controlHidden = null;
 	
+	this.getValue = function() {
+		return this.controlHidden.val();
+	}
+	
+	this.getLabel = function() {
+		return this.controlVisible.val();
+	}
 }
 
 $.fn.ubicacionMR = function(param) {
+	var respuesta = new UbicacionMR();
+	respuesta.controlVisible = $(this);
 	//Determino si el control tiene busqueda de lugares y/o direcciones
 	var searchEnabled = true;
 	if (param.sinBusqueda && param.sinBusqueda==true) {
 		searchEnabled = false;
 	}
-	if (searchEnabled) {
-		//Detemina la url que usará para las búsquedas
-		var url = '';
-		if (param.filtro) {
-			if (param.filtro.clase=='direccion') {
-				url = ubicacionMR.armarUrlDir(param);
-			} else if (param.filtro.clase=='lugar') {
-				url = ubicacionMR.armarUrlLugares(param);
-			}
-		} else {
+	//Detemina la url que usará para las búsquedas
+	var url = '';
+	if (param.filtro) {
+		if (param.filtro.clase=='direccion') {
 			url = ubicacionMR.armarUrlDir(param);
+		} else if (param.filtro.clase=='lugar') {
+			url = ubicacionMR.armarUrlLugares(param);
 		}
-		//Determina el formato para la representación de las estructuras de datos geográficas
-		var format = ubicacionMR.format_default;
-		if (param.format) {
-			format = param.format;
-		}
+	} else {
+		url = ubicacionMR.armarUrlDir(param);
+	}
+	//Determina el formato para la representación de las estructuras de datos geográficas
+	var format = ubicacionMR.format_default;
+	if (param.format) {
+		format = param.format;
+	}
+	if (searchEnabled) {
 		//Determina la función de procesamiento del resultado
 		var procesar = function() {console.log('función de procesamiento por defecto.')}
 		if (param.filtro) {
@@ -414,9 +452,12 @@ $.fn.ubicacionMR = function(param) {
 			minLength = param.minLength;
 		}
 		//Define invocación a webservice en evento keyup 
+		var timeInvocation = 0;
 		this.keyup(function(event) {
 			if ($(this).val().length>=minLength) {
 				if (ubicacionMR.validChar(event.keyCode)) {
+					var idLoading = "#"+this.id+"-loading";
+					$(idLoading).css("display","inline");
 					$.ajax({
 						type: 'GET',
 						url: url,
@@ -430,9 +471,11 @@ $.fn.ubicacionMR = function(param) {
 							if (param.filtro.clase=='direccion' || param.filtro.clase=='lugar') {
 								procesar(control,result);
 							}
+							$(idLoading).css("display","none");
 						},
 						error: function(result) {
-							console.log(result);
+							$("#"+this.id+"-loading").css("display","none");
+							$(idLoading).css("display","none");
 						}
 					});
 				}
@@ -443,7 +486,9 @@ $.fn.ubicacionMR = function(param) {
 		});
 		//Agrega los controles asociados al input del buscador (ubicacionMR-input, hidden, lista)
 		$(this).addClass(ubicacionMR.suffix+'-input');
+		$(this).after("<img src='img/loading.gif' class='"+ubicacionMR.suffix+"-loading' id='"+this[0].id+"-loading' />");
 		$(this).after("<input class='"+ubicacionMR.suffix+"-hidden' id='"+this[0].id+"-hidden' type='hidden' value=''/>");
+		respuesta.controlHidden = $("#"+this[0].id+"-hidden");
 		var idMapa = "";
 		if (param.mapa && param.mapa.id) {
 			idMapa = param.mapa.id;
@@ -487,17 +532,43 @@ $.fn.ubicacionMR = function(param) {
 			  projection:'EPSG:22185',
 			  units: 'm',
 			  center: ol.extent.getCenter(extent), //ol.proj.fromLonLat([x,y]), //ol.proj.transform([x, y], 'EPSG:4326', 'EPSG:22185'),
-			  //center: ol.proj.fromLonLat([32,64]),
 			  extent: extent,
-			  /*resolutions: scales,
-			  minResolution: scales[scales.length - 1], 
-    		  maxResolution: scales[0], */
-			  //resolution: scales[7], 
 			  zoom:12,
-			  //minScale: scales[scales.length - 1], 
-    		  //maxScale: scales[0], 
 			})
 		});
+		var loadOnInit = false;
+		if (param.mapa.cargarAlInicio) {
+			if (param.mapa.features) {
+				var dibujarEnMapa = function() {console.log('función de dibujo en mapa por defecto.')}
+				if (format=='geojson') {
+					dibujarEnMapa = ubicacionMR.geojson.dibujarEnMapa;
+				}
+				dibujarEnMapa(param.mapa.features,map);		
+			} else {
+				$.ajax({
+					type: 'GET',
+					url: url,
+					contentType : "application/json; charset=utf-8",
+					dataType: "json",
+					data: {
+						term: $(this).val()
+					},
+					success: function(result) {
+						var control = respuesta.controlVisible;
+						if (param.filtro.clase=='direccion' || param.filtro.clase=='lugar') {
+							var dibujarEnMapa = function() {console.log('función de dibujo en mapa por defecto.')}
+							if (format=='geojson') {
+								dibujarEnMapa = ubicacionMR.geojson.dibujarEnMapa;
+							}
+							dibujarEnMapa(result,map);
+						}
+					},
+					error: function(result) {
+						console.log(result);
+					}
+				});
+			}
+		}
 		//Defino posibilidad de dibujar en el mapa
 		if (param.mapa.dibujar) {
 			var source = new ol.source.Vector({wrapX: false});
@@ -559,4 +630,5 @@ $.fn.ubicacionMR = function(param) {
 		}
 		$('#'+param.mapa.id).data('map', map);
 	}
+	return respuesta;
 }
