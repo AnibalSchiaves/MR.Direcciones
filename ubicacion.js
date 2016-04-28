@@ -2,8 +2,8 @@
 	
 	this.suffix = "ubicacionMR"
 	
-	this.url_servicio_dir = "http://localhost:8080/ubicacion-ws/geojson/direcciones"; //"exampledir.json";
-	this.url_servicio_lugares = "http://localhost/mapa/proxy.php?url=http://t-www.rosario.gov.ar/web/geojson-lugares";
+	this.url_servicio_dir = "http://info-126.pm.rosario.gov.ar:8080/ubicaciones/geojson/direcciones"; //"exampledir.json";
+	this.url_servicio_lugares = "http://info-126.pm.rosario.gov.ar/mapa/proxy.php?url=http://t-www.rosario.gov.ar/web/geojson-lugares";
 	
 	this.style_map_default = {'width': '50%', 'heigth': '400px', 'border': '1px #AAAAAA solid'};
 	
@@ -23,7 +23,8 @@
 			  	}),*/
 				image: new ol.style.Icon({
 					src: 'img/boton-pin.png',
-					scale: 0.6
+					scale: 0.6,
+					offset: [0,20]
 				})
 			});
 	
@@ -258,6 +259,7 @@
 			$("#"+control).val($(element.currentTarget).html());
 			var hidden = $(element.currentTarget).attr('hidden-value');
 			$("#"+control+"-hidden").val(hidden);
+			hidden = hidden.replace(new RegExp('"', 'g'), '\\"');
 			hidden = hidden.replace(new RegExp("'", 'g'), '"');
 			var geojson = JSON.parse(hidden);
 			var idMapa = $(element.currentTarget).parent().attr('mapa-rel');
@@ -320,47 +322,6 @@
 				var vectorSource = new ol.source.Vector({
 					features: features
 				});
-				var image = new ol.style.Circle({
-					radius: 3,
-					fill: new ol.style.Fill({
-              			color: 'red'
-            		}),	
-					stroke: new ol.style.Stroke({color: 'red', width: 1})
-				});
-				var styles = {
-					'Point': new ol.style.Style({
-						image: image
-					}),
-					'MultiLineString': new ol.style.Style({
-          				stroke: new ol.style.Stroke({
-            				color: 'rgba(233,95,56, 0.5)', //"#E95F38",
-            				width: 5
-          				})
-        			}),
-					'MultiPolygon': new ol.style.Style({
-          				stroke: new ol.style.Stroke({
-            				color: 'yellow',
-            				width: 3
-          				}),
-          				fill: new ol.style.Fill({
-            				color: 'rgba(255, 255, 0, 0.3)'
-          				})
-        			})
-				};
-				/*var imagePin = new ol.style.Icon({
-					src: 'img/boton-pin.png',
-					scale: 0.6
-				});*/
-				var styleFunction = function(feature) {
-					var geojson = (new ol.format.GeoJSON()).writeFeatureObject(feature);
-					if (geojson.geometry && geojson.geometry.type && geojson.geometry.type == 'Point') {
-						var iconStyle = new ol.style.Style({
-							image: ubicacionMR.imagePin
-						});
-						feature.setStyle(iconStyle);
-					}
-					return styles[geojson.geometry.type];
-				};
 				var vectorLayer = null;
 				map.getLayers().forEach(function (lyr) {if (lyr.get('id')=='layerFeatures') {vectorLayer = lyr;}});
 				if (vectorLayer == null) {
